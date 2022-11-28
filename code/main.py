@@ -10,7 +10,6 @@ def show_wrap(name, img, size, close=True):
     :param size: [int] - Resizing of the window
     :param close: [bool] - If 'False' window stays on screen (for comparisons)
     :return: null
-
     Simple wrapper for cv2.imshow(). Resize with original aspect ratio, display, wait for keystroke and close.
     """
     h, w = img.shape[:2]
@@ -26,7 +25,6 @@ def load_images_from_folder(folder):
     """
     :param folder: [string] - path to folder with images
     :return: [np.array of np.ndarray, np.array] - array of images and array of corresponding filenames
-
     Load images from folder
     """
     images = []
@@ -44,7 +42,6 @@ def empty_beach_mask(gray, show_detailed_steps=False):
     :param gray: [np.ndarray] - Grayscale image
     :param show_detailed_steps: [bool] - If 'True' display every step
     :return: [np.ndarray] - Binary image of empty beach
-
     Otsu thresholding to find out threshold value to use in Canny edge detector (hysteresis).
     Canny edges on empty beach highlight areas that have complicated shapes.
     To connect the area of individual complicated shapes I use morphological closing with large square kernel.
@@ -90,7 +87,6 @@ def inclusion(box1, box2):
     :param box1: [np.array] - information of bounding box
     :param box2: [np.array] - information of bounding box
     :return: [bool] - 'True' if center of one box is inside the other. 'False' otherwise.
-
     Test inclusion between two boxes.
     """
     tl1, br1, center1, _ = box1
@@ -105,7 +101,6 @@ def alignment(box1, box2):
     :param box1: [np.array] - information of bounding box
     :param box2: [np.array] - information of bounding box
     :return: [bool] - 'True' if center of one box is in width of the other and close above. 'False' otherwise.
-
     Test alignment between two boxes.
     """
     tl1, br1, center1, dim = box1
@@ -125,7 +120,6 @@ def get_all_overlaps(boxes, curr, mode=0):
     :param curr: [int] - Index of box on witch the overlapping is tested
     :param mode: [int] - Switch for different kind of overlaps
     :return: [np.array] - All overlaps with current box
-
     Test all boxes for overlapping with current box.
     """
     overlaps = []
@@ -144,7 +138,6 @@ def contour_filter(canny, org, show_detailed_steps=False):
     :param org: [np.ndarray] - Original image to draw results on
     :param show_detailed_steps: [bool] - If 'True' display every step
     :return: [np.array] - Array of bounding boxes
-
     Filter through contours based on canny edges.
     Filtering based on size (minimum and maximum) and aspect ratio of the bounding boxes.
     If box fits criteria, add the box information to array.
@@ -179,7 +172,6 @@ def merger(boxes, org, mode=0, show_detailed_steps=False):
     :param mode: [int] - Switch for different kind of overlaps
     :param show_detailed_steps: [bool] - If 'True' display every step
     :return: [np.array] - Bounding boxes with no overlaps
-
     Function that iterates through all boxes and merges overlaps.
     The outer 'while' loop ends when the inner 'while' loop goes through whole array and does not find overlaps.
     Inside inner 'while' loop the overlapping boxes combine into one bigger box, that is put on the front of the
@@ -238,7 +230,6 @@ def find_people_regions(org, gray, mask, show_detailed_steps = False):
     :param mask: [np.ndarray] - Mask image to cover unwanted parts of the image
     :param show_detailed_steps: [bool] - If 'True' display every step
     :return: [np.array], [int] - returns array of bounding boxes of interesting areas and otsu threshold value
-
     This function tries to find people bounding boxes. Because of perspective distortion in these images
     I opted for three levels of blurring. Further the image plain is, the less blurring is desirable.
     On the blured and concatenated picture parts is used canny edge detector and then masked out the part of the image
@@ -276,7 +267,6 @@ def filter_small(mrg_sml_boxs, org, show_detailed_steps=False):
     :param org: [np.ndarray] - Original image to draw results on
     :param show_detailed_steps: [bool] - If 'True' display every step
     :return: [np.array] - Bounding boxes that passed the filters
-
     Filter out boxes that are too small with respect to perspective.
     """
     filter_boxes = []
@@ -286,18 +276,18 @@ def filter_small(mrg_sml_boxs, org, show_detailed_steps=False):
     split = h // 20
     for b in mrg_sml_boxs:
         _, _, center, dim = b
-        if center[1] > 15 * split and (dim[0] < 13 or dim[1] < 13):
+        if center[1] > 15 * split and (dim[0] < 15 or dim[1] < 15):
             cv2.rectangle(copy, b[0], b[1], (0, 255, 0), 1)
             filter_boxes.append(b)
-        elif 15 * split > center[1] > 11 * split and (dim[0] < 8 or dim[1] < 8):
+        elif 15 * split > center[1] and (dim[0] < 9 or dim[1] < 9):
             cv2.rectangle(copy, b[0], b[1], (0, 0, 255), 1)
             filter_boxes.append(b)
         else:
             out_boxes.append(b)
-    #if show_detailed_steps:
-    print("Number of boxed filtered out" + str(len(filter_boxes)))
-    print("Number of output boxes" + str(len(out_boxes)))
-    show_wrap("DELETED BOXES", copy, 1340)
+    if show_detailed_steps:
+        print("Number of boxed filtered out" + str(len(filter_boxes)))
+        print("Number of output boxes" + str(len(out_boxes)))
+        show_wrap("DELETED BOXES", copy, 1340)
 
     return out_boxes
 
@@ -308,7 +298,6 @@ def clasify_boxes(potential_people_boxes, org, show_detailed_steps=False):
     :param org: [np.ndarray] - Original image to draw results on
     :param show_detailed_steps: [bool] - If 'True' display every step
     :return: [np.array, np.array, np.array] - three arrays of small, medium and large areas
-
     This function should separate differently sized bounding boxes and deal with them accordingly.
     Small boxes - either small objects (persons head) or person split to smaller parts => connect aligned small boxes
     Medium boxes - most likely full body person detected => no need to analyse further
